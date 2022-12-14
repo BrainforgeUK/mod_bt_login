@@ -14,16 +14,21 @@
  */
 
 // no direct access
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\ModuleHelper;
+use Joomla\CMS\Language\Text;
+
 defined('_JEXEC') or die('Restricted access');
 jimport( 'joomla.user.helper' );
 class modbt_loginHelper
 {
 	public static function loadModule($name,$title){
-		$module=JModuleHelper::getModule($name,$title);
-		return JModuleHelper::renderModule($module);
+		$module=ModuleHelper::getModule($name,$title);
+		return ModuleHelper::renderModule($module);
 	}
 	public static function loadModuleById($id){
-		$db		= JFactory::getDbo();
+		$db		= Factory::getDbo();
 		$query	= $db->getQuery(true);
 			$query->select('module,title' );
 			$query->from('#__modules');
@@ -31,19 +36,20 @@ class modbt_loginHelper
 			$db->setQuery((string)$query);
 			$module = $db->loadObject();
 			
-			$module = JModuleHelper::getModule( $module->module,$module->title );
+			$module = ModuleHelper::getModule( $module->module,$module->title );
 			
-			$contents = JModuleHelper::renderModule ( $module);
+			$contents = ModuleHelper::renderModule ( $module);
 			return $contents;
 	}
 	public static function getReturnURL($params, $type)
 	{
-		$app	= JFactory::getApplication();
+		$config = Factory::getConfig();
+		$app	= Factory::getApplication();
 		$router = $app->getRouter();
 		$url = null;
 		if ($itemid =  $params->get($type))
 		{
-			$db		= JFactory::getDbo();
+			$db		= Factory::getDbo();
 			$query	= $db->getQuery(true);
 
 			$query->select($db->quoteName('link'));
@@ -53,7 +59,7 @@ class modbt_loginHelper
 
 			$db->setQuery($query);
 			if ($link = $db->loadResult()) {
-				if ($router->getMode() == JROUTER_MODE_SEF) {
+				if ($config->get('sef', 1) == 1) {
 					$url = 'index.php?Itemid='.$itemid;
 				}
 				else {
@@ -67,7 +73,7 @@ class modbt_loginHelper
 			$uri = clone JFactory::getURI();
 			$vars = $router->parse($uri);
 			unset($vars['lang']);
-			if ($router->getMode() == JROUTER_MODE_SEF)
+			if ($config->get('sef', 1) == 1)
 			{
 				if (isset($vars['Itemid']))
 				{
@@ -98,21 +104,21 @@ class modbt_loginHelper
 
 	public static function getType()
 	{
-		$user =  JFactory::getUser();
+		$user =  Factory::getUser();
 		return (!$user->get('guest')) ? 'logout' : 'login';
 	}
 	
 	public static function getModules($params) {
-		$user =  JFactory::getUser();
+		$user =  Factory::getUser();
 		if ($user->get('guest')) return '';
 		
-		$document = JFactory::getDocument();
+		$document = Factory::getDocument();
 		$moduleRender = $document->loadRenderer('module');
 		$positionRender = $document->loadRenderer('modules');
 		
 		$html = '';
 		
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$i=0;
 		$module_id = $params->get('module_id', array());
 		if (count($module_id) > 0) {
@@ -132,7 +138,7 @@ class modbt_loginHelper
 		$module_position = $params->get('module_position', array());
 		if (count($module_position) > 0) {
 			foreach ($module_position as $position) {
-				$modules = JModuleHelper::getModules($position);
+				$modules = ModuleHelper::getModules($position);
 				foreach ($modules as $module) {
 					if ($module->module != 'mod_bt_login') {
 						$i++;
@@ -148,9 +154,9 @@ class modbt_loginHelper
 		return $html;
 	}
 	public static function fetchHead($params){
-		$document	= JFactory::getDocument();
+		$document	= Factory::getDocument();
 		$header = $document->getHeadData();
-		$mainframe = JFactory::getApplication();
+		$mainframe = Factory::getApplication();
 		$template = $mainframe->getTemplate();
 
 		$loadJquery = true;
@@ -210,9 +216,9 @@ class modbt_loginHelper
 	 */	
 	public static function register($temp)
 	{
-		$config = JFactory::getConfig();
-		$db		= JFactory::getDbo();
-		$params = JComponentHelper::getParams('com_users');
+		$config = Factory::getConfig();
+		$db		= Factory::getDbo();
+		$params = ComponentHelper::getParams('com_users');
 		
 		// Initialise the table with JUser.
 		$user = new JUser;
@@ -237,7 +243,7 @@ class modbt_loginHelper
 		
 		// Bind the data.
 		if (! $user->bind ( $data )) {
-			self::ajaxResponse('$error$'.JText::sprintf ( 'COM_USERS_REGISTRATION_BIND_FAILED', $user->getError () ));
+			self::ajaxResponse('$error$'.Text::sprintf ( 'COM_USERS_REGISTRATION_BIND_FAILED', $user->getError () ));
 		}
 		
 		// Load the users plugin group.
@@ -245,7 +251,7 @@ class modbt_loginHelper
 
 		// Store the data.
 		if (!$user->save()) {
-			self::ajaxResponse('$error$'.JText::sprintf('COM_USERS_REGISTRATION_SAVE_FAILED', $user->getError()));
+			self::ajaxResponse('$error$'.Text::sprintf('COM_USERS_REGISTRATION_SAVE_FAILED', $user->getError()));
 		}
 
 		// Compile the notification mail values.
@@ -261,13 +267,13 @@ class modbt_loginHelper
 			// Set the link to confirm the user email.					
 			$data['activate'] = $data['siteurl'].'index.php?option=com_users&task=registration.activate&token='.$data['activation'];
 			
-			$emailSubject	= JText::sprintf(
+			$emailSubject	= Text::sprintf(
 				'COM_USERS_EMAIL_ACCOUNT_DETAILS',
 				$data['name'],
 				$data['sitename']
 			);
 
-			$emailBody = JText::sprintf(
+			$emailBody = Text::sprintf(
 				'COM_USERS_EMAIL_REGISTERED_WITH_ACTIVATION_BODY',
 				$data['name'],
 				$data['sitename'],
@@ -283,14 +289,14 @@ class modbt_loginHelper
 			// Set the link to activate the user account.						
 			$data['activate'] = $data['siteurl'].'index.php?option=com_users&task=registration.activate&token='.$data['activation'];
 		
-			$emailSubject	= JText::sprintf(
+			$emailSubject	= Text::sprintf(
 				'COM_USERS_EMAIL_ACCOUNT_DETAILS',
 				$data['name'],
 				$data['sitename']
 			);
 			
 
-			$emailBody = JText::sprintf(
+			$emailBody = Text::sprintf(
 				'COM_USERS_EMAIL_REGISTERED_WITH_ACTIVATION_BODY',
 				$data['name'],
 				$data['sitename'],
@@ -302,13 +308,13 @@ class modbt_loginHelper
 
 		} else {
 
-			$emailSubject	= JText::sprintf(
+			$emailSubject	= Text::sprintf(
 				'COM_USERS_EMAIL_ACCOUNT_DETAILS',
 				$data['name'],
 				$data['sitename']
 			);
 
-			$emailBody = JText::sprintf(
+			$emailBody = Text::sprintf(
 				'COM_USERS_EMAIL_REGISTERED_BODY',
 				$data['name'],
 				$data['sitename'],
@@ -317,17 +323,17 @@ class modbt_loginHelper
 		}
 
 		// Send the registration email.
-		$return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $data['email'], $emailSubject, $emailBody);
+		$return = Factory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $data['email'], $emailSubject, $emailBody);
 		
 		//Send Notification mail to administrators
 		if (($params->get('useractivation') < 2) && ($params->get('mail_to_admin') == 1)) {
-			$emailSubject = JText::sprintf(
+			$emailSubject = Text::sprintf(
 				'COM_USERS_EMAIL_REGISTERED_BODY',
 				$data['name'],
 				$data['sitename']
 			);
 
-			$emailBodyAdmin = JText::sprintf(
+			$emailBodyAdmin = Text::sprintf(
 				'COM_USERS_EMAIL_REGISTERED_NOTIFICATION_TO_ADMIN_BODY',
 				$data['name'],
 				$data['username'],
@@ -345,19 +351,19 @@ class modbt_loginHelper
 			// Send mail to all superadministrators id
 			foreach( $rows as $row )
 			{
-				JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $row->email, $emailSubject, $emailBodyAdmin);
+				Factory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $row->email, $emailSubject, $emailBodyAdmin);
 
 				// Check for an error.
 				if ($return !== true) {
-					//echo(JText::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'));
+					//echo(Text::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'));
 				}
 			}
 		}
 		// Check for an error.
 		if ($return !== true) {
-			//echo (JText::_('COM_USERS_REGISTRATION_SEND_MAIL_FAILED'));
+			//echo (Text::_('COM_USERS_REGISTRATION_SEND_MAIL_FAILED'));
 			// Send a system message to administrators receiving system mails
-			$db = JFactory::getDBO();
+			$db = Factory::getDBO();
 			$q = "SELECT id
 				FROM #__users
 				WHERE block = 0
@@ -373,7 +379,7 @@ class modbt_loginHelper
 				$messages = array();
 
 				foreach ($sendEmail as $userid) {
-					$messages[] = "(".$userid.", ".$userid.", '".$jdate->toSql()."', '".JText::_('COM_USERS_MAIL_SEND_FAILURE_SUBJECT')."', '".JText::sprintf('COM_USERS_MAIL_SEND_FAILURE_BODY', $return, $data['username'])."')";
+					$messages[] = "(".$userid.", ".$userid.", '".$jdate->toSql()."', '".Text::_('COM_USERS_MAIL_SEND_FAILURE_SUBJECT')."', '".Text::sprintf('COM_USERS_MAIL_SEND_FAILURE_BODY', $return, $data['username'])."')";
 				}
 				$q .= implode(',', $messages);
 				$db->setQuery($q);
@@ -391,16 +397,16 @@ class modbt_loginHelper
 	}		
 	
 	public static function ajax($bttask, $params){
-		$mainframe = JFactory::getApplication('site');
+		$mainframe = Factory::getApplication('site');
 		
 		/**
 		 * check task is login to do
 		 */
 		
 		if($bttask=='login'){
-			JRequest::checkToken() or self::ajaxResponse('$error$'.JText::_('JINVALID_TOKEN'));
+			$mainframe->input->checkToken() or self::ajaxResponse('$error$'.Text::_('JINVALID_TOKEN'));
 	
-			if ($return = JRequest::getVar('return', '', 'method', 'base64')) {
+			if ($return = $mainframe->input->getVar('return', '', 'method', 'base64')) {
 				$return = base64_decode($return);
 				if (!JURI::isInternal($return)) {
 					$return = '';
@@ -408,21 +414,21 @@ class modbt_loginHelper
 			}		
 			$options = array();
 			
-			$options['remember'] = JRequest::getBool('remember', false);
+			$options['remember'] = $mainframe->input->getBool('remember', false);
 			
 			$options['return'] = $return;
 	
 			$credentials = array();
 			
-			$credentials['username'] = JRequest::getVar('username', '', 'method', 'username');
+			$credentials['username'] = $mainframe->input->getVar('username', '', 'method', 'username');
 			
-			$credentials['password'] = JRequest::getString('passwd', '', 'post', JREQUEST_ALLOWRAW);
+			$credentials['password'] = $mainframe->input->getString('passwd', '', 'post', JREQUEST_ALLOWRAW);
 			
 			//preform the login action
 			$error = $mainframe->login($credentials, $options);
 			self::ajaxResponse($error);
 		}elseif(($bttask=='register')) {
-			JRequest::checkToken() or self::ajaxResponse('$error$'.JText::_('JINVALID_TOKEN'));	
+			$mainframe->input->checkToken() or self::ajaxResponse('$error$'.Text::_('JINVALID_TOKEN'));
 			/**
 			 * check task is registration to do
 			 */
@@ -435,25 +441,25 @@ class modbt_loginHelper
 			//check captcha 
 			if($params->get('use_captcha', 1)){
 				if($params->get('use_captcha', 1) != 2){
-					$captcha = JFactory::getConfig ()->get ( 'captcha' );
+					$captcha = Factory::getConfig ()->get ( 'captcha' );
 					if($captcha){
 						$reCaptcha = JCaptcha::getInstance ($captcha);
 						$checkCaptcha = $reCaptcha->checkAnswer('');
 						if($checkCaptcha==false){
-							self::ajaxResponse('$error$'.JText::_('INCORRECT_CAPTCHA'));
+							self::ajaxResponse('$error$'.Text::_('INCORRECT_CAPTCHA'));
 						}
 					}					
 				}else{
-					$session = JFactory::getSession();
-					if(JRequest::getString('btl_captcha') != $session->get('btl_captcha')){
-						self::ajaxResponse('$error$'.JText::_('INCORRECT_CAPTCHA'));
+					$session = Factory::getSession();
+					if($mainframe->input->getString('btl_captcha') != $session->get('btl_captcha')){
+						self::ajaxResponse('$error$'.Text::_('INCORRECT_CAPTCHA'));
 					}
 				}			
 			}
 		
 			// Get the user data.
 			// reset params form name in getVar function (not yet)
-			$jform = JRequest::getVar('jform');
+			$jform = $mainframe->input->getVar('jform');
 			$requestData ['name']= $jform['name'];
 			$requestData ['username']= $jform['username'];
 			$requestData ['password1']= $jform['password1'];
@@ -471,44 +477,44 @@ class modbt_loginHelper
 			//check space
 			if (strlen(str_replace(' ', '', $jform['password1'])) != strlen($jform['password1']))
 			{
-				self::ajaxResponse('$error$'. JText::_('COM_USERS_MSG_SPACES_IN_PASSWORD'));
+				self::ajaxResponse('$error$'. Text::_('COM_USERS_MSG_SPACES_IN_PASSWORD'));
 			}
 
 
 			// Minimum length option
 			if (strlen((string) $jform['password1'] ) < $minLength)
 			{
-				self::ajaxResponse('$error$'. JText::plural('COM_USERS_MSG_PASSWORD_TOO_SHORT_N', $minLength));
+				self::ajaxResponse('$error$'. Text::plural('COM_USERS_MSG_PASSWORD_TOO_SHORT_N', $minLength));
 			}
 
 			//check integer
 			$nInts = preg_match_all('/[0-9]/', $jform['password1'], $iMatches);
 			if ($nInts < $minIntegers)
 			{
-				self::ajaxResponse('$error$'. JText::plural('COM_USERS_MSG_NOT_ENOUGH_INTEGERS_N', $minIntegers));
+				self::ajaxResponse('$error$'. Text::plural('COM_USERS_MSG_NOT_ENOUGH_INTEGERS_N', $minIntegers));
 			}
 
 			$nUppercase = preg_match_all("/[A-Z]/", $jform['password1'], $uMatches);
 			if ($nUppercase < $minUppercase)
 			{
-				self::ajaxResponse('$error$'. JText::plural('COM_USERS_MSG_NOT_ENOUGH_UPPERCASE_LETTERS_N', $minIntegers));
+				self::ajaxResponse('$error$'. Text::plural('COM_USERS_MSG_NOT_ENOUGH_UPPERCASE_LETTERS_N', $minIntegers));
 			}
 
 			$nsymbols = preg_match_all('[\W]', $jform['password1'], $sMatches);
 			if ($nsymbols < $minSymbols)
 			{
-				self::ajaxResponse('$error$'. JText::plural('COM_USERS_MSG_NOT_ENOUGH_SYMBOLS_N', $minSymbols));
+				self::ajaxResponse('$error$'. Text::plural('COM_USERS_MSG_NOT_ENOUGH_SYMBOLS_N', $minSymbols));
 			}
 
 			// Attempt to save the data.
 			$return	=self::register($requestData);
 
 			if ($return === 'adminactivate'){
-				self::ajaxResponse(JText::_('COM_USERS_REGISTRATION_COMPLETE_VERIFY'));
+				self::ajaxResponse(Text::_('COM_USERS_REGISTRATION_COMPLETE_VERIFY'));
 			} elseif ($return === 'useractivate') {
-				self::ajaxResponse(JText::_('COM_USERS_REGISTRATION_COMPLETE_ACTIVATE'));		
+				self::ajaxResponse(Text::_('COM_USERS_REGISTRATION_COMPLETE_ACTIVATE'));		
 			} else {
-				self::ajaxResponse(JText::_('COM_USERS_REGISTRATION_SAVE_SUCCESS'));	
+				self::ajaxResponse(Text::_('COM_USERS_REGISTRATION_SAVE_SUCCESS'));	
 			}
 		}else{
 			self::ajaxResponse(self::createCaptcha());
@@ -533,7 +539,7 @@ class modbt_loginHelper
 	 * @since 2.6.0
 	 */
 	public static function createCaptcha(){
-		$session = JFactory::getSession();
+		$session = Factory::getSession();
 		$oldImages = glob(JPATH_ROOT . '/modules/mod_bt_login/captcha_images/*.png');
 		if($oldImages){
 			foreach($oldImages as $oldImage){
@@ -590,7 +596,7 @@ class modbt_loginHelper
 		$html = '<img src="' . self::createCaptcha() .'" alt=""/>
 				<div style="clear:both"></div>
 				<input type="text" name="btl_captcha" id="btl-captcha" size="10"/>
-				<span id="btl-captcha-reload" title="' . JText::_('RELOAD_CAPTCHA') . '">' . JText::_('RELOAD_CAPTCHA') . '</span>
+				<span id="btl-captcha-reload" title="' . Text::_('RELOAD_CAPTCHA') . '">' . Text::_('RELOAD_CAPTCHA') . '</span>
 				';
 		return $html;
 	}

@@ -1,5 +1,5 @@
 # mod_bt_login
-<div class='bt_description'><h3>BT Login Module Version 3.10.0</h3>
+<div class='bt_description'><h3>BT Login Module Version 4.0.0</h3>
 <a href='https://brainforge.co.uk' target='_blank'>https://brainforge.co.uk</a>
 For Joomla 3.10.0 derived from BT Login Module Version 2.6.1 by <a href='http://bowthemes.com' target='_blank'></a>
 <p>BT Login module is alternate Joomla! login module with special styles associated and can be placed at various position, while you can retain the standard login module in the default position.</p>

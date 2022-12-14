@@ -13,6 +13,9 @@
  */
 
 // no direct access
+use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\ModuleHelper;
+
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
 jimport ( 'cms.captcha.captcha' );
 jimport ( 'joomla.application.component.view' );
@@ -25,21 +28,18 @@ require_once (dirname ( __FILE__ ) . '/helper.php');
 modbt_loginHelper::fetchHead ( $params );
 
 // load language 
-$language = JFactory::getLanguage();
+$language = Factory::getLanguage();
 $language_tag = $language->getTag(); // loads the current language-tag
-JFactory::getLanguage()->load('plg_captcha_recaptcha',JPATH_ADMINISTRATOR,$language_tag,true);
-JFactory::getLanguage()->load('mod_bt_login',JPATH_SITE,$language_tag,true);
-JFactory::getLanguage()->load('lib_joomla',JPATH_SITE,$language_tag,true);
-JFactory::getLanguage()->load('com_users',JPATH_SITE,$language_tag,true);
+Factory::getLanguage()->load('plg_captcha_recaptcha',JPATH_ADMINISTRATOR,$language_tag,true);
+Factory::getLanguage()->load('mod_bt_login',JPATH_SITE,$language_tag,true);
+Factory::getLanguage()->load('lib_joomla',JPATH_SITE,$language_tag,true);
+Factory::getLanguage()->load('com_users',JPATH_SITE,$language_tag,true);
 
-$mainframe = JFactory::getApplication ();
-$bttask = JRequest::getVar('bttask');
+$mainframe = Factory::getApplication ();
+$bttask = $mainframe->input->getVar('bttask');
 if($bttask){
 	modbt_loginHelper::ajax($bttask, $params);
 }
-
-$mainframe = JFactory::getApplication ();
-
 
 //get position display
 $align = $params->get ( 'align_option' );
@@ -111,7 +111,7 @@ $return_decode = str_replace('&amp;','&',JRoute::_($return_decode));
 
 $loggedInHtml = modbt_loginHelper::getModules ( $params );
 
-$user =  JFactory::getUser ();
+$user =  Factory::getUser ();
 
 //setting display type
 if ($params->get ( "display_type" ) == 1) {
@@ -123,7 +123,7 @@ if ($params->get ( "display_type" ) == 1) {
 //setting for registration 
 $usersConfig = JComponentHelper::getParams ( 'com_users' );
 $enabledRegistration = false;
-$viewName = JRequest::getVar ( 'view', 'registry' );
+$viewName = $mainframe->input->getVar ( 'view', 'registry' );
 $enabledRecaptcha = 'none';
 if ($usersConfig->get ( 'allowUserRegistration' ) && $params->get ( "enabled_registration", 1 ) && ($viewName != "registration" || $integrated_com !='') ) {
 	$enabledRegistration = true;
@@ -131,7 +131,7 @@ if ($usersConfig->get ( 'allowUserRegistration' ) && $params->get ( "enabled_reg
 	if($enabledRecaptcha == 1){
 		//create instance captcha, get recaptcha
 		
-		$captcha = JFactory::getConfig ()->get ( 'captcha' );
+		$captcha = Factory::getConfig ()->get ( 'captcha' );
 		if($captcha){
 			$reCaptcha = JCaptcha::getInstance ($captcha);
 			$reCaptcha = $reCaptcha->display ('bt-login-recaptcha', 'bt-login-recaptcha', 'bt-login-recaptcha' );
@@ -144,7 +144,7 @@ if ($usersConfig->get ( 'allowUserRegistration' ) && $params->get ( "enabled_reg
 	}
 }
 
-$language = JFactory::getLanguage ();
-require (JModuleHelper::getLayoutPath ( 'mod_bt_login' ));
+$language = Factory::getLanguage ();
+require (ModuleHelper::getLayoutPath ( 'mod_bt_login' ));
 ?>
 

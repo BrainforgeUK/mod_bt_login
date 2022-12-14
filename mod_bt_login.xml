@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension 
-	type="module" 
-	version="2.5"
-	client="site"
-	 method="upgrade">
+<extension  type="module"  version="4.2.5" client="site" method="upgrade">
 	<name>BT Login</name>
     <author>BowThemes</author>
 	<creationDate>April 2012</creationDate>
-   <copyright>Copyright (C) 2012 Bowthemes. All rights reserved.</copyright>
-   <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
-   <authorEmail>support@bowthemes.com</authorEmail>
-   <authorUrl>http://www.bowthemes.com</authorUrl>
-	<version>2.6.4</version>
+   	<copyright>Copyright (C) 2012 Bowthemes. All rights reserved.</copyright>
+   	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+   	<authorEmail>support@bowthemes.com</authorEmail>
+   	<authorUrl>http://www.bowthemes.com</authorUrl>
+	<version>4.0.0</version>
 	<description>MOD_BT_LOGIN_XML_DESCRIPTION</description>
 
 	<files>
@@ -25,6 +21,7 @@
 	<languages folder="language">
 		<language tag="en-GB">en-GB/en-GB.mod_bt_login.ini</language>
 	</languages>
+
 	<config>
 		<fields name="params">			
 			<fieldset name="basic">				
@@ -196,4 +193,12 @@
 	
 		</fields>
 	</config>
+
+	<!--
+	<updateservers>
+		<server type="extension" priority="1" name="BT Login">
+			https://brainforge.co.uk/component/bfupdater?element=mod_bt_login.xml
+		</server>
+	</updateservers>
+	-->
 </extension>
