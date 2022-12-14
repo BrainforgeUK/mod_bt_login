@@ -15,17 +15,15 @@
 
 // no direct access
 use Joomla\CMS\Factory;
+use Joomla\CMS\Form\FormField;
 
 defined('_JEXEC') or die('Restricted access');
 
-jimport('joomla.form.formfield');
-
-class JFormFieldAsset extends JFormField {
+class JFormFieldAsset extends FormField {
 
     protected $type = 'Asset';
 
     protected function getInput() {		
-		JHTML::_('behavior.framework');		
 		$document	= Factory::getDocument();
 		if (!version_compare(JVERSION, '3.0', 'ge')) {
 			$checkJqueryLoaded = false;
