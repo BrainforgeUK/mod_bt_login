@@ -13,13 +13,13 @@
 	<files>
 		<filename module="mod_bt_login">mod_bt_login.php</filename>
 		<filename module="mod_bt_login">helper.php</filename>
-		<filename module="mod_bt_login">index.html</filename>
 		<folder module="mod_bt_login">tmpl</folder>
 		<folder module="mod_bt_login">admin</folder>
 	</files>
 
 	<languages folder="language">
 		<language tag="en-GB">en-GB/en-GB.mod_bt_login.ini</language>
+		<language tag="en-GB">en-GB/en-GB.mod_bt_login.sys.ini</language>
 	</languages>
 
 	<config>
